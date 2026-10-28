@@ -21,7 +21,8 @@ FetchContent_MakeAvailable(safetyhook)
 add_library(lyrics_shared STATIC shared/Settings.cpp)
 target_compile_features(lyrics_shared PUBLIC cxx_std_20)
 target_include_directories(lyrics_shared PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_compile_definitions(lyrics_shared PUBLIC NOMINMAX UNICODE _UNICODE)
+# windows 10 apis (pointer messages) on every toolchain, msys2 defaults lower than the cross compiler
+target_compile_definitions(lyrics_shared PUBLIC NOMINMAX UNICODE _UNICODE _WIN32_WINNT=0x0A00 WINVER=0x0A00)
 
 set(imgui_sources
     third_party/imgui/imgui.cpp
