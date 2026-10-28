@@ -33,6 +33,7 @@ examples:
   lyrics config set distance 25      push them further away
   lyrics config set text_color #FF66CC
   lyrics config set menu_key F8      open the search with F8 instead of RightShift
+  lyrics config set browser edge     open songs in Edge, where the extension is
 
 in game, press the menu key (RightShift by default) to search a song.
 )";
@@ -170,6 +171,8 @@ int extension() {
     std::puts("  1. open chrome://extensions (or edge://extensions)");
     std::puts("  2. turn on Developer mode");
     std::puts("  3. Load unpacked, and pick that folder");
+    std::puts("\nsongs open in your default browser. if the extension lives in another one:");
+    std::puts("  lyrics config set browser edge     (or chrome)");
     return 0;
 }
 

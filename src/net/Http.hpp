@@ -16,8 +16,8 @@ struct Response {
 
 // a blocking https GET; call it from a worker thread. nullopt when the request never got an answer
 [[nodiscard]] std::optional<Response> get(const std::string& url, std::string_view user_agent);
-// hands the url to the system's default browser
-bool open_url(const std::string& url);
+// hands the url to a browser: `executable` (msedge.exe, chrome.exe) when it's installed, the system default otherwise
+bool open_url(const std::string& url, std::wstring_view executable = {});
 // a writable folder for cached downloads
 [[nodiscard]] std::filesystem::path cache_dir();
 

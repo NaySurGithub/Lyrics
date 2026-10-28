@@ -27,6 +27,7 @@ constexpr Field kFields[]{
     {"shadow", "true | false", "Minecraft's drop shadow under the text", "true"},
     {"elytra_lead", "true | false", "puts the lyrics ahead of you while gliding fast", "false"},
     {"menu_key", "a key name", "the key that opens the song search (RightShift, F8, Insert, L...)", "F8"},
+    {"browser", "default | edge | chrome", "where songs open; pick the one the extension is installed in", "edge"},
 };
 
 struct KeyName {
@@ -197,6 +198,9 @@ std::string get(const Settings& settings, std::string_view key) {
     if (key == "menu_key") {
         return key_name(settings.menu_key);
     }
+    if (key == "browser") {
+        return settings.browser == Browser::edge ? "edge" : settings.browser == Browser::chrome ? "chrome" : "default";
+    }
     return {};
 }
 
@@ -271,6 +275,14 @@ bool set(Settings& settings, std::string_view key, std::string_view value, std::
             return bad("a key name like RightShift, F8, Insert or L");
         }
         settings.menu_key = *code;
+        return true;
+    }
+    if (key == "browser") {
+        const std::string browser = lower(value);
+        if (browser != "default" && browser != "edge" && browser != "chrome") {
+            return bad("default, edge or chrome");
+        }
+        settings.browser = browser == "edge" ? Browser::edge : browser == "chrome" ? Browser::chrome : Browser::system;
         return true;
     }
     error = "unknown setting " + std::string(key);

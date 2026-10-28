@@ -11,6 +11,8 @@
 namespace lyrics::settings {
 
 enum class Mode { normal, sky };
+// where a song picked in game opens: the system default, or the browser the extension is installed in
+enum class Browser { system, edge, chrome };
 
 struct Settings {
     Mode mode = Mode::normal;
@@ -25,6 +27,7 @@ struct Settings {
     bool elytra_lead = true;
     // a windows virtual key code
     int menu_key = 0xA1;
+    Browser browser = Browser::system;
 };
 
 struct Field {

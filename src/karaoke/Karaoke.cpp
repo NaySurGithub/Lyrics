@@ -196,7 +196,10 @@ void Karaoke::play(music::Track track) {
         status_ = "Finding the video...";
         shown_line_ = -1;
     }
-    run([this, track] {
+    const std::wstring_view browser = settings_.browser == settings::Browser::edge     ? L"msedge.exe"
+                                      : settings_.browser == settings::Browser::chrome ? L"chrome.exe"
+                                                                                       : L"";
+    run([this, track, browser] {
         const auto video = music::youtube_video(track);
         const std::string url = video ? "https://www.youtube.com/watch?v=" + *video
                                       : "https://www.youtube.com/results?search_query=" +
@@ -223,7 +226,7 @@ void Karaoke::play(music::Track track) {
                 std::lock_guard lock(mutex_);
                 pending_open_.clear();
             }
-            net::open_url(url);
+            net::open_url(url, browser);
         }
         load_lyrics(track);
     });

@@ -148,9 +148,32 @@ std::optional<Response> get(const std::string& url, std::string_view user_agent)
     return response;
 }
 
-bool open_url(const std::string& url) {
+bool open_url(const std::string& url, std::wstring_view executable) {
+    const std::wstring wide = widen(url);
+    if (!executable.empty()) {
+        // installed browsers register their full path under App Paths, per user or for the machine
+        const std::wstring key = L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\" + std::wstring(executable);
+        wchar_t path[MAX_PATH]{};
+        DWORD size = sizeof(path);
+        for (HKEY root : {HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE}) {
+            size = sizeof(path);
+            if (RegGetValueW(root, key.c_str(), nullptr, RRF_RT_REG_SZ, nullptr, path, &size) == ERROR_SUCCESS) {
+                const std::wstring argument = L"\"" + wide + L"\"";
+                if (reinterpret_cast<std::intptr_t>(
+                        ShellExecuteW(nullptr, L"open", path, argument.c_str(), nullptr, SW_SHOWNORMAL)) > 32) {
+                    return true;
+                }
+            }
+        }
+        // edge also answers its own url scheme on every windows 10 / 11
+        if (executable == L"msedge.exe" &&
+            reinterpret_cast<std::intptr_t>(ShellExecuteW(nullptr, L"open", (L"microsoft-edge:" + wide).c_str(), nullptr,
+                                                          nullptr, SW_SHOWNORMAL)) > 32) {
+            return true;
+        }
+    }
     // under wine this lands in winebrowser, which hands it to the mac's default browser
-    return reinterpret_cast<std::intptr_t>(ShellExecuteW(nullptr, L"open", widen(url).c_str(), nullptr, nullptr, SW_SHOWNORMAL)) > 32;
+    return reinterpret_cast<std::intptr_t>(ShellExecuteW(nullptr, L"open", wide.c_str(), nullptr, nullptr, SW_SHOWNORMAL)) > 32;
 }
 
 std::filesystem::path cache_dir() {

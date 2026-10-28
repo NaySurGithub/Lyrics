@@ -12,13 +12,20 @@ Minecraft's own font.
 - 🌅 Two modes: lines that float in front of you, or hang in the sky like the sun
 - 🪂 Flying with an elytra? The lyrics stay ahead of you instead of spawning behind
 - 🎬 Play anything on YouTube yourself, the lyrics follow along
+- 🌐 Works with Microsoft Edge and Google Chrome
 - 🧹 One exe, one dll, nothing installed - `lyrics uninject` and it's gone
 
 ## Install
 
 1. Download `Lyrics-x.y.z-windows-x64.zip` from the releases and unzip it.
-2. Add the browser extension: open `chrome://extensions` (or `edge://extensions`),
-   turn on **Developer mode**, click **Load unpacked** and pick the `extension` folder.
+2. Add the browser extension to Edge or Chrome:
+   - **Edge**: open `edge://extensions`, turn on **Developer mode** (bottom left),
+     click **Load unpacked** and pick the `extension` folder
+   - **Chrome**: open `chrome://extensions`, turn on **Developer mode** (top right),
+     click **Load unpacked** and pick the `extension` folder
+
+   Not your default browser? `lyrics config set browser edge` (or `chrome`) and
+   songs open there.
 3. Start Minecraft, join a world, and run `lyrics inject`.
 4. Press **Right Shift**, type a song, click it. Done!
 
@@ -40,6 +47,7 @@ live. Everything is saved in `%LOCALAPPDATA%\Lyrics\settings.ini`.
 | `shadow` | `false` | Minecraft's drop shadow under the text. |
 | `elytra_lead` | `true` | Puts the lyrics ahead along your flight path while gliding fast. |
 | `menu_key` | `RightShift` | The key that opens the song search, e.g. `F8`, `Insert`, `L`. |
+| `browser` | `default` | Where songs open: `default`, `edge` or `chrome`. Pick the one the extension is in. |
 
 ## Commands
 
@@ -64,7 +72,7 @@ The extension only ever talks to `127.0.0.1:8974`.
 
 ## Requirements
 
-Windows 10/11 x64 · Minecraft Bedrock 26.60 · Chrome or Edge
+Windows 10/11 x64 · Minecraft Bedrock 26.60 · Microsoft Edge or Google Chrome
 
 On any other game version the overlay refuses to hook and does nothing.
 

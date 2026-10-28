@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Lyrics Bridge",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Tells the Lyrics overlay what YouTube is playing, where the song is and the video's own captions, over 127.0.0.1:8974.",
   "permissions": [],
   "host_permissions": [
