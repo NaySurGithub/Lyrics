@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "Lyrics Bridge",
+  "version": "1.0.0",
+  "description": "Tells the Lyrics overlay what YouTube is playing, where the song is and the video's own captions, over 127.0.0.1:8974.",
+  "permissions": [],
+  "host_permissions": [
+    "http://127.0.0.1/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.youtube.com/*",
+        "https://music.youtube.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://www.youtube.com/*",
+        "https://music.youtube.com/*"
+      ],
+      "js": [
+        "captions.js"
+      ],
+      "run_at": "document_idle",
+      "world": "MAIN"
+    }
+  ]
+}

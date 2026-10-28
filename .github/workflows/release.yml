@@ -1,0 +1,76 @@
+name: 🎤 Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: 🚀 Build & Release
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🔎 Read version
+        id: version
+        shell: bash
+        run: echo "version=$(grep -oP 'project\(Lyrics VERSION \K[0-9.]+' CMakeLists.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: 🕵️ Check if release already exists
+        id: check
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "v${{ steps.version.outputs.version }}" --repo "${{ github.repository }}" > /dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Release v${{ steps.version.outputs.version }} already exists, nothing to do."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Release v${{ steps.version.outputs.version }} does not exist yet, building it."
+          fi
+
+      - name: 🧰 Set up MSYS2
+        if: steps.check.outputs.exists == 'false'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            git
+            zip
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+
+      - name: 🔨 Build
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          cmake --preset windows
+          cmake --build --preset windows
+
+      - name: 📦 Pack
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          cd build/windows/dist
+          zip -r "../../../Lyrics-${{ steps.version.outputs.version }}-windows-x64.zip" .
+
+      - name: 🎉 Create release
+        if: steps.check.outputs.exists == 'false'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v${{ steps.version.outputs.version }}" \
+            "Lyrics-${{ steps.version.outputs.version }}-windows-x64.zip" \
+            --repo "${{ github.repository }}" \
+            --title "Lyrics v${{ steps.version.outputs.version }}" \
+            --generate-notes
