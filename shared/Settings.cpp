@@ -16,17 +16,17 @@ namespace lyrics::settings {
 namespace {
 
 constexpr Field kFields[]{
-    {"mode", "normal: each line floats in front of you and stays put / sky: lines hang in the sky like the sun"},
-    {"distance", "how far in front of you the lyrics float, in blocks (4 to 40, normal mode)"},
-    {"sky_angle", "how high above the horizon the lyrics hang, in degrees (5 to 80, sky mode)"},
-    {"height", "how high above your eyes the lyrics float, in blocks (-5 to 10, normal mode)"},
-    {"scale", "size of the lyric text (0.25 to 3)"},
-    {"time_offset", "shifts the lyrics earlier (positive) or later (negative) against the music, in ms"},
-    {"text_color", "colour of the lyric text, #RRGGBB or #RRGGBBAA"},
-    {"typewriter", "types each line out letter by letter as it starts (true / false)"},
-    {"shadow", "Minecraft's drop shadow under the text (true / false)"},
-    {"elytra_lead", "puts the lyrics ahead along your flight path while gliding fast (true / false)"},
-    {"menu_key", "the key that opens the song search in game, e.g. RightShift, F8, Insert, L"},
+    {"mode", "normal | sky", "normal: lines float in front of you / sky: they hang in the sky like the sun", "sky"},
+    {"distance", "4 to 40", "how far in front of you the lyrics float, in blocks (normal mode)", "25"},
+    {"height", "-5 to 10", "how high above your eyes they float, in blocks (normal mode)", "1"},
+    {"sky_angle", "5 to 80", "how high above the horizon they hang, in degrees (sky mode)", "40"},
+    {"scale", "0.25 to 3", "size of the text", "1.5"},
+    {"time_offset", "-2000 to 2000", "ms; positive shows the lyrics earlier, negative later", "300"},
+    {"text_color", "#RRGGBB(AA)", "colour of the text", "#FF66CC"},
+    {"typewriter", "true | false", "types each line out letter by letter", "false"},
+    {"shadow", "true | false", "Minecraft's drop shadow under the text", "true"},
+    {"elytra_lead", "true | false", "puts the lyrics ahead of you while gliding fast", "false"},
+    {"menu_key", "a key name", "the key that opens the song search (RightShift, F8, Insert, L...)", "F8"},
 };
 
 struct KeyName {
@@ -150,7 +150,7 @@ bool save(const Settings& settings) {
     std::ostringstream out;
     out << "# Lyrics overlay settings. edit them with `lyrics config set <key> <value>`, the game picks changes up live\n";
     for (const Field& field : kFields) {
-        out << "\n# " << field.description << "\n" << field.key << " = " << get(settings, field.key) << "\n";
+        out << "\n# " << field.description << " (" << field.takes << ")\n" << field.key << " = " << get(settings, field.key) << "\n";
     }
     std::ofstream file_out(file(), std::ios::trunc);
     file_out << out.str();

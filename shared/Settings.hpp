@@ -29,7 +29,10 @@ struct Settings {
 
 struct Field {
     std::string_view key;
+    // what values it takes, as shown to the user
+    std::string_view takes;
     std::string_view description;
+    std::string_view example;
 };
 
 [[nodiscard]] std::span<const Field> fields();

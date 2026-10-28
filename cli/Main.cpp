@@ -22,10 +22,17 @@ usage:
   lyrics inject                      load the overlay into the running game
   lyrics uninject                    take it back out
   lyrics status                      is the game running, is the overlay in
-  lyrics config                      list every setting and its value
-  lyrics config set <key> <value>    change one, the game picks it up live
+  lyrics config                      every setting, its value and what it takes
+  lyrics config set <setting> <value>
+                                     change one, the game picks it up live
   lyrics config reset                back to the defaults
   lyrics extension                   where the browser extension is and how to add it
+
+examples:
+  lyrics config set mode sky         lines hang in the sky instead of in front of you
+  lyrics config set distance 25      push them further away
+  lyrics config set text_color #FF66CC
+  lyrics config set menu_key F8      open the search with F8 instead of RightShift
 
 in game, press the menu key (RightShift by default) to search a song.
 )";
@@ -79,15 +86,38 @@ int status() {
     return 0;
 }
 
+const settings::Field* find_field(std::string_view key) {
+    for (const settings::Field& field : settings::fields()) {
+        if (field.key == key) {
+            return &field;
+        }
+    }
+    return nullptr;
+}
+
+void list_settings(const settings::Settings& current) {
+    std::printf("settings, saved in %s\n\n", narrow(settings::file().wstring()).c_str());
+    std::printf("  %-12s %-11s %-15s %s\n", "setting", "value", "takes", "what it does");
+    for (const settings::Field& field : settings::fields()) {
+        std::printf("  %-12s %-11s %-15s %s\n", std::string(field.key).c_str(), settings::get(current, field.key).c_str(),
+                    std::string(field.takes).c_str(), std::string(field.description).c_str());
+    }
+    std::puts("\nchange one with:  lyrics config set <setting> <value>");
+    std::puts("for example:      lyrics config set mode sky");
+}
+
+// `lyrics config set mode` with no value: what it is and what it takes
+void explain(const settings::Field& field, const settings::Settings& current) {
+    std::printf("%s: %s\n", std::string(field.key).c_str(), std::string(field.description).c_str());
+    std::printf("  now:   %s\n", settings::get(current, field.key).c_str());
+    std::printf("  takes: %s\n", std::string(field.takes).c_str());
+    std::printf("  e.g.   lyrics config set %s %s\n", std::string(field.key).c_str(), std::string(field.example).c_str());
+}
+
 int config(const std::vector<std::string>& args) {
     settings::Settings current = settings::load();
     if (args.empty()) {
-        std::printf("%s\n\n", narrow(settings::file().wstring()).c_str());
-        for (const settings::Field& field : settings::fields()) {
-            std::printf("  %-12s %-12s %.*s\n", std::string(field.key).c_str(),
-                        settings::get(current, field.key).c_str(), static_cast<int>(field.description.size()),
-                        field.description.data());
-        }
+        list_settings(current);
         return 0;
     }
     if (args[0] == "reset" && args.size() == 1) {
@@ -98,25 +128,39 @@ int config(const std::vector<std::string>& args) {
         std::puts("ok: settings reset");
         return 0;
     }
-    if (args[0] == "set" && args.size() >= 3) {
-        std::string value = args[2];
-        for (std::size_t index = 3; index < args.size(); ++index) {
-            value += " " + args[index];
-        }
-        std::string error;
-        if (!settings::set(current, args[1], value, error)) {
-            std::printf("error: %s\n", error.c_str());
-            return 1;
-        }
-        if (!settings::save(current)) {
-            std::puts("error: could not write the settings file");
-            return 1;
-        }
-        std::printf("ok: %s = %s\n", args[1].c_str(), settings::get(current, args[1]).c_str());
-        return 0;
+    if (args[0] != "set") {
+        std::printf("error: unknown config command %s\n\n", args[0].c_str());
+        list_settings(current);
+        return 2;
     }
-    std::fputs(kUsage, stderr);
-    return 2;
+    const settings::Field* field = args.size() >= 2 ? find_field(args[1]) : nullptr;
+    if (field == nullptr) {
+        if (args.size() >= 2) {
+            std::printf("error: there is no setting called %s\n\n", args[1].c_str());
+        }
+        list_settings(current);
+        return 2;
+    }
+    if (args.size() == 2) {
+        explain(*field, current);
+        return 2;
+    }
+    std::string value = args[2];
+    for (std::size_t index = 3; index < args.size(); ++index) {
+        value += " " + args[index];
+    }
+    std::string error;
+    if (!settings::set(current, args[1], value, error)) {
+        std::printf("error: %s\n\n", error.c_str());
+        explain(*field, current);
+        return 1;
+    }
+    if (!settings::save(current)) {
+        std::puts("error: could not write the settings file");
+        return 1;
+    }
+    std::printf("ok: %s = %s\n", args[1].c_str(), settings::get(current, args[1]).c_str());
+    return 0;
 }
 
 int extension() {
